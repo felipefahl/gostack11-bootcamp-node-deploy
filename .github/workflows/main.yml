@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2.1.0
+      with:
+        node-version: 12.x        
+    
+    # instalar as dependencias do yarn
+    - name: Install dependencies
+      uses: yarn    
+    
+    # Executar a build
+    - name: Run Build
+      uses: yarn build
+          
+    #Copiar o codigo pra dentro da DigitalOcean
+    - name: Copy dist to Digital Ocean
+      uses: appleboy/scp-action@master
+      with: 
+        host: ${{secrets.SSH_HOST}}
+        username: ${{secrets.SSH_USER}}
+        port: ${{secrets.SSH_PORT}}
+        key: ${{secrets.SSH_KEY}}
+        source: ".,!node_modules"
+        target: "~/app/gostack11-bootcamp-node-deploy" 
+    
+    #Yarn Install dentro do Digital Ocean
+    - name: Yarn Install Digital Ocean
+      uses: appleboy/ssh-action@master
+      with: 
+        host: ${{secrets.SSH_HOST}}
+        username: ${{secrets.SSH_USER}}
+        port: ${{secrets.SSH_PORT}}
+        key: ${{secrets.SSH_KEY}}
+        script: |
+          cd ~/app/gostack11-bootcamp-node-deploy
+          yarn
+    
+    #Executar Migrations
+    - name: Run Migrations Digital Ocean
+      uses: appleboy/ssh-action@master
+      with: 
+        host: ${{secrets.SSH_HOST}}
+        username: ${{secrets.SSH_USER}}
+        port: ${{secrets.SSH_PORT}}
+        key: ${{secrets.SSH_KEY}}
+        script: |
+          cd ~/app/gostack11-bootcamp-node-deploy
+          ./node_modules/.bin/typeorm migration:run
+    
+    #Restart do Servidor Node.js
+    - name: Run Migrations Digital Ocean
+      uses: appleboy/ssh-action@master
+      with: 
+        host: ${{secrets.SSH_HOST}}
+        username: ${{secrets.SSH_USER}}
+        port: ${{secrets.SSH_PORT}}
+        key: ${{secrets.SSH_KEY}}
+        script: pm2 restart barber-api
