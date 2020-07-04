@@ -18,11 +18,11 @@ jobs:
     
     # instalar as dependencias do yarn
     - name: Install dependencies
-      uses: yarn    
+      run: yarn    
     
     # Executar a build
     - name: Run Build
-      uses: yarn build
+      run: yarn build
           
     #Copiar o codigo pra dentro da DigitalOcean
     - name: Copy dist to Digital Ocean
