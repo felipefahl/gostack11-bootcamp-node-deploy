@@ -47,4 +47,4 @@ jobs:
           cd ~/app/gostack11-bootcamp-node-deploy
           yarn
           ./node_modules/.bin/typeorm migration:run
-          pm2 restart barber-api
+          pm2 restart gobarber-api
